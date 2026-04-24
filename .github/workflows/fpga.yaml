@@ -5,6 +5,8 @@ on:
     # Comment out (or remove) the following line to run the FPGA workflow on every push:
     branches: none
   workflow_dispatch:
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   fpga:
