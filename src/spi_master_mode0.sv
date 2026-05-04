@@ -82,7 +82,7 @@ module spi_master_mode0 (
     always_comb begin
         next_state = state;
         case (state)
-            IDLE:      next_state = start ? ASSERT_CS : IDLE;
+            IDLE:      next_state = state_t'(start ? ASSERT_CS : IDLE);
             ASSERT_CS: next_state = LOAD_BIT;
             LOAD_BIT:  next_state = SCLK_LOW;
             SCLK_LOW:  next_state = SCLK_HIGH;
