@@ -42,7 +42,7 @@ module spi_master_mode0 (
             recv_reg  <= 8'h00;
             bit_cnt   <= 3'd0;
         end else if (tick) begin
-            state <= next_state; 
+            state <= state_t'(next_state);
 
             case (state)
                 IDLE:      done <= 1'b0; 
@@ -73,7 +73,7 @@ module spi_master_mode0 (
                     done <= 1'b1;
                 end
                 
-                default: state <= IDLE;
+                default: state <= state_t'(IDLE);
             endcase
         end
     end
