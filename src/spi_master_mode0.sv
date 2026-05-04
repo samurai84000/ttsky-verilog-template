@@ -87,7 +87,7 @@ module spi_master_mode0 (
             LOAD_BIT:  next_state = SCLK_LOW;
             SCLK_LOW:  next_state = SCLK_HIGH;
             SCLK_HIGH: next_state = NEXT_BIT; 
-            NEXT_BIT:  next_state = (bit_cnt == 3'd0) ? FINISH : LOAD_BIT;
+            NEXT_BIT:  next_state = state_t'((bit_cnt == 3'd0) ? FINISH : LOAD_BIT);
             FINISH:    next_state = IDLE; 
             default:   next_state = IDLE;
         endcase
