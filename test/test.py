@@ -8,7 +8,6 @@ from cocotb.triggers import ClockCycles
 
 @cocotb.test()
 async def test_project(dut):
-    #cocotb.pass_test()
     dut._log.info("Start")
 
     # Set the clock period to 10 us (100 KHz)
@@ -26,16 +25,17 @@ async def test_project(dut):
 
     dut._log.info("Test project behavior")
 
-    # Set the input values you want to test
-    dut.ui_in.value = 20
-    dut.uio_in.value = 30
+    # Wait for a few cycles for the FSM to settle after reset
+    await ClockCycles(dut.clk, 5)
 
-    # Wait for one clock cycle to see the output values
-    await ClockCycles(dut.clk, 1)
+    # UPDATED ASSERTION:
+    # We check that the SPI Chip Selects (uo_out[2] and uo_out[3]) are high (1) by default.
+    # From your info.yaml: uo_out[2] is FRAM_cs, uo_out[3] is LoRA_cs.[cite: 3]
+    # Binary 00001100 is 0x0C in hex.[cite: 4]
+    uo_out_val = dut.uo_out.value
+    dut._log.info(f"uo_out value is: {uo_out_val}")
+    
+    # This checks if bits 2 and 3 are set to 1
+    assert (uo_out_val & 0x0C) == 0x0C 
 
-    # The following assersion is just an example of how to check the output values.
-    # Change it to match the actual expected output of your module:
-    assert dut.uo_out.value == 50
-
-    # Keep testing the module by changing the input values, waiting for
-    # one or more clock cycles, and asserting the expected output values.
+    dut._log.info("Test passed: Chip Selects are inactive high.")
