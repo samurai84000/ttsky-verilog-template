@@ -10,10 +10,14 @@ module top (
     output logic spi_clk, MOSI, FRAM_cs, LoRA_cs,
     input  logic MISO
 );
-
     // --- Internal Handshake Wires ---
     logic [7:0] spi_tx_byte, spi_rx_byte;
     logic spi_start, spi_done, master_cs;
+    
+    // --- Clock Gating Signals ---
+    logic sleep_en;
+    logic clk_en_latch;
+    logic gated_clk;
 
     // --- Instantiate FSM (The Controller) ---
     FSM fsm_inst (
@@ -28,19 +32,35 @@ module top (
         .spi_done(spi_done),
         .spi_tx_byte(spi_tx_byte),
         .spi_rx_byte(spi_rx_byte),
-        .master_cs(master_cs)
+        .master_cs(master_cs),
+        
+        // New status output to drive clock gating
+        .sleep_en(sleep_en)
     );
 
+    // --- Glitch-Free Glueless Clock Gating Cell Emulation ---
+    // A negative-edge latch prevents glitches on gated_clk by holding the 
+    // enable status stable while the main clock pulses high.
+    always_latch begin
+        if (!clk) begin
+            clk_en_latch <= !sleep_en;
+        end
+    end
+    
+    // Final gated clock tree for peripherals
+    assign gated_clk = clk && clk_en_latch;
+
     // --- Instantiate SPI Master (The Peripheral) ---
+    // This block now runs on the gated clock and draws zero dynamic power during sleep!
     spi_master_mode0 spi_inst (
-        .clk(clk), .rst(rst),
+        .clk(gated_clk), .rst(rst),
         .start(spi_start),
         .data2send(spi_tx_byte),
         .miso(MISO),
         .done(spi_done),
         .sclk(spi_clk),
         .mosi(MOSI),
-        .cs(master_cs), // Internal CS signal
+        .cs(master_cs), 
         .data2receive(spi_rx_byte)
     );
 
