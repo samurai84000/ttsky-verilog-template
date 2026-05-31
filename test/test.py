@@ -68,7 +68,7 @@ async def test_power_cycle_profile(dut):
     """
     
     # --- STEP 1: Start the System Clock ---
-    clock = Clock(dut.clk, 100, unit="ns")
+    clock = Clock(dut.clk, 62.5, units="ns")
     cocotb.start_soon(clock.start())
     
     # --- STEP 2: System Initialization and Reset ---
